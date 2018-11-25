@@ -1,0 +1,30 @@
+{
+  "name": "iterablext",
+  "version": "1.0.0",
+  "description": "Fundamental functions for Iterables",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test",
+    "postversion": "git push && git push --tags"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/johtela/iterablext.git"
+  },
+  "keywords": [
+    "iterable",
+    "typescript"
+  ],
+  "author": "Tommi Johtela",
+  "license": "MPL-2.0",
+  "bugs": {
+    "url": "https://github.com/johtela/iterablext/issues"
+  },
+  "homepage": "https://github.com/johtela/iterablext#readme",
+  "devDependencies": {
+    "typescript": "^3.1.6"
+  }
+}
