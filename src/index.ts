@@ -18,19 +18,19 @@ export function reduce<T, U>(iter: Iterable<T>, reducer: (acc: U, curr: T) => U,
 
 export function* zipWith<T, U, V>(iter1: Iterable<T>, iter2: Iterable<U>,
     zipper: (t: T, u: U) => V): Iterable<V> {
-    let it1 = iter1[Symbol.iterator]();
-    let it2 = iter2[Symbol.iterator]();
+    let it1 = iter1[Symbol.iterator]()
+    let it2 = iter2[Symbol.iterator]()
     while (true) {
-        let res1 = it1.next();
-        let res2 = it2.next();
+        let res1 = it1.next()
+        let res2 = it2.next()
         if (res1.done || res2.done)
-            break;
-        yield zipper(res1.value, res2.value);
+            break
+        yield zipper(res1.value, res2.value)
     }
 }
 
 export function* zip<T, U>(iter1: Iterable<T>, iter2: Iterable<U>): Iterable<[T, U]> {
-    return zipWith(iter1, iter2, (t, u) => [ t, u ]);
+    return zipWith(iter1, iter2, (t, u) => [ t, u ])
 }
 
 export function first<T>(iter: Iterable<T>): T | undefined {
@@ -88,13 +88,13 @@ export function max<T>(iter: Iterable<T>, selector: (item: T) => number): T | un
 export function every<T>(iter: Iterable<T>, predicate: (item: T) => boolean): boolean {
     for (let item of iter)
         if (!predicate(item))
-            return false;
-    return true;
+            return false
+    return true
 }
 
 export function any<T>(iter: Iterable<T>, predicate: (item: T) => boolean): boolean {
     for (let item of iter)
         if (predicate(item))
-            return true;
-    return false;
+            return true
+    return false
 }
