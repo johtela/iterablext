@@ -16,6 +16,13 @@ export function reduce<T, U>(iter: Iterable<T>, reducer: (acc: U, curr: T) => U,
     return result
 }
 
+export function* flatMap<T, U>(iter: Iterable<T>, mapper: (item: T) => Iterable<U>):
+    Iterable<U> {
+    for (let outer of iter)
+        for (let inner of mapper(outer)) 
+            yield inner
+}
+
 export function* zipWith<T, U, V>(iter1: Iterable<T>, iter2: Iterable<U>,
     zipper: (t: T, u: U) => V): Iterable<V> {
     let it1 = iter1[Symbol.iterator]();
