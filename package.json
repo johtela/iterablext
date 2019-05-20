@@ -24,6 +24,6 @@
   },
   "homepage": "https://github.com/johtela/iterablext#readme",
   "devDependencies": {
-    "typescript": "^3.1.6"
+    "typescript": "^3.4.5"
   }
 }

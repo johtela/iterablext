@@ -1,11 +1,10 @@
 {
-    "compilerOptions": {
-      "target": "es2015",
-      "module": "commonjs",
-      "declaration": true,
+  "compilerOptions": {
+      "sourceMap": true,
       "outDir": "./lib",
-      "strict": true
-    },
-    "include": ["src"],
-    "exclude": ["node_modules", "**/tests/*"]
+      "module": "commonjs",
+      "target": "es2018",
+      "incremental": true
+  },
+  "exclude": ["**/tests/*"]
 }
