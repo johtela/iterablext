@@ -6,6 +6,5 @@
       "target": "es2018",
       "declaration": true,
       "incremental": true
-  },
-  "exclude": ["**/tests/*"]
+  }
 }
