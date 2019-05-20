@@ -1,4 +1,6 @@
-export { async } from './async'
+import * as async from './async'
+
+export { async }
 
 export function* map<T, U>(iter: Iterable<T>, mapper: (item: T) => U): Iterable<U> {
     for (let item of iter)
