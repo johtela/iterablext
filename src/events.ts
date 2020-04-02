@@ -3,15 +3,10 @@ export interface Event<M> {
     args: M[keyof M]
 }
 
-export type EventStream<M> = AsyncIterable<Event<M>>
+export type ElemEvent = Event<HTMLElementEventMap>
 
-export type ElemEventStream = EventStream<HTMLElementEventMap>
-
-let stream: ElemEventStream
-
-async function test() {
-    for await (let e of stream) {
-        if (e.kind == 'keydown')
-            e.args as MouseEvent 
-    }
+export function elemEvents(target: HTMLElement, 
+    ...kinds: (keyof HTMLElementEventMap)[]): AsyncIterable<ElemEvent> {
+    const eventBuffer: ElemEvent[] = []
+    const resolveBuffer: 
 }
