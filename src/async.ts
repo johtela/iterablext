@@ -1,38 +1,43 @@
-export async function* concat<T>(...iters: AsyncIterable<T>[]): AsyncIterable<T> {
+export async function* concat<T>(...iters: AsyncIterable<T>[]):
+    AsyncIterable<T> {
     for (let i = 0; i < iters.length; ++i)
         for await (let item of iters[i])
             yield item
 }
 
-export async function* map<T, U>(iter: AsyncIterable<T>, mapper: (item: T) => U,
-    thisArg: any = undefined): AsyncIterable<U> {
+export async function* map<T, U>(iter: AsyncIterable<T>, 
+    mapper: (item: T) => U | Promise<U>, thisArg: any = undefined): 
+    AsyncIterable<U> {
     if (thisArg)
         mapper = mapper.bind(thisArg)
     for await (let item of iter)
-        yield mapper(item)
+        yield await mapper(item)
 }
 
-export async function* filter<T>(iter: AsyncIterable<T>, predicate: (item: T) => boolean,
+export async function* filter<T>(iter: AsyncIterable<T>,
+    predicate: (item: T) => boolean | Promise<boolean>, 
     thisArg: any = undefined): AsyncIterable<T> {
     if (thisArg)
         predicate = predicate.bind(thisArg)
     for await (let item of iter)
-        if (predicate(item))
+        if (await predicate(item))
             yield item
 }
 
-export async function reduce<T, U>(iter: AsyncIterable<T>, reducer: (acc: U, curr: T) => U,
-    initial: U, thisArg: any = undefined): Promise<U> {
+export async function reduce<T, U>(iter: AsyncIterable<T>,
+    reducer: (acc: U, curr: T) => U | Promise<U>, initial: U, 
+    thisArg: any = undefined): Promise<U> {
     if (thisArg)
         reducer = reducer.bind(thisArg)
     let result = initial
     for await (let item of iter)
-        result = reducer(result, item)
+        result = await reducer(result, item)
     return result
 }
 
-export async function* flatMap<T, U>(iter: AsyncIterable<T>, mapper: (item: T) => AsyncIterable<U>,
-    thisArg: any = undefined): AsyncIterable<U> {
+export async function* flatMap<T, U>(iter: AsyncIterable<T>,
+    mapper: (item: T) => AsyncIterable<U>, thisArg: any = undefined):
+    AsyncIterable<U> {
     if (thisArg)
         mapper = mapper.bind(thisArg)
     for await (let outer of iter)
@@ -40,8 +45,9 @@ export async function* flatMap<T, U>(iter: AsyncIterable<T>, mapper: (item: T) =
             yield inner
 }
 
-export async function* zipWith<T, U, V>(iter1: AsyncIterable<T>, iter2: AsyncIterable<U>,
-    zipper: (t: T, u: U) => V, thisArg: any = undefined): AsyncIterable<V> {
+export async function* zipWith<T, U, V>(iter1: AsyncIterable<T>,
+    iter2: AsyncIterable<U>, zipper: (t: T, u: U) => V | Promise<V>,
+    thisArg: any = undefined): AsyncIterable<V> {
     if (thisArg)
         zipper = zipper.bind(thisArg)
     let it1 = iter1[Symbol.iterator]()
@@ -51,11 +57,12 @@ export async function* zipWith<T, U, V>(iter1: AsyncIterable<T>, iter2: AsyncIte
         let res2 = it2.next()
         if (res1.done || res2.done)
             break
-        yield zipper(res1.value, res2.value)
+        yield await zipper(res1.value, res2.value)
     }
 }
 
-export async function* zip<T, U>(iter1: AsyncIterable<T>, iter2: AsyncIterable<U>): AsyncIterable<[T, U]> {
+export async function* zip<T, U>(iter1: AsyncIterable<T>,
+    iter2: AsyncIterable<U>): AsyncIterable<[T, U]> {
     return zipWith(iter1, iter2, (t, u) => [t, u])
 }
 
@@ -65,7 +72,8 @@ export async function first<T>(iter: AsyncIterable<T>): Promise<T | undefined> {
     return undefined
 }
 
-export async function* skip<T>(iter: AsyncIterable<T>, skipCount: number): AsyncIterable<T> {
+export async function* skip<T>(iter: AsyncIterable<T>, skipCount: number):
+    AsyncIterable<T> {
     for await (let item of iter)
         if (skipCount > 0)
             skipCount--
@@ -73,9 +81,34 @@ export async function* skip<T>(iter: AsyncIterable<T>, skipCount: number): Async
             yield item
 }
 
-export async function* take<T>(iter: AsyncIterable<T>, takeCount: number): AsyncIterable<T> {
+export async function* skipWhile<T>(iter: AsyncIterable<T>,
+    predicate: (item: T) => boolean | Promise<boolean>, 
+    thisArg: any = undefined): AsyncIterable<T> {
+    if (thisArg)
+        predicate = predicate.bind(thisArg)
+    for await (let item of iter)
+        if (!await predicate(item)) {
+            yield item
+            break
+        }
+}
+
+export async function* take<T>(iter: AsyncIterable<T>, takeCount: number):
+    AsyncIterable<T> {
     for await (let item of iter)
         if (takeCount-- > 0)
+            yield item
+        else
+            break
+}
+
+export async function* takeWhile<T>(iter: AsyncIterable<T>,
+    predicate: (item: T) => boolean | Promise<boolean>, 
+    thisArg: any = undefined): AsyncIterable<T> {
+    if (thisArg)
+        predicate = predicate.bind(thisArg)
+    for await (let item of iter)
+        if (await predicate(item))
             yield item
         else
             break
@@ -85,8 +118,9 @@ export async function isEmpty<T>(iter: AsyncIterable<T>): Promise<boolean> {
     return first(iter) !== undefined
 }
 
-export async function min<T>(iter: AsyncIterable<T>, selector: (item: T) => number,
-    thisArg: any = undefined): Promise<T | undefined> {
+export async function min<T>(iter: AsyncIterable<T>,
+    selector: (item: T) => number, thisArg: any = undefined):
+    Promise<T | undefined> {
     if (thisArg)
         selector = selector.bind(thisArg)
     let result: T | undefined = undefined
@@ -101,8 +135,9 @@ export async function min<T>(iter: AsyncIterable<T>, selector: (item: T) => numb
     return result
 }
 
-export async function max<T>(iter: AsyncIterable<T>, selector: (item: T) => number,
-    thisArg: any = undefined): Promise<T | undefined> {
+export async function max<T>(iter: AsyncIterable<T>,
+    selector: (item: T) => number, thisArg: any = undefined):
+    Promise<T | undefined> {
     if (thisArg)
         selector = selector.bind(thisArg)
     let result: T | undefined = undefined
@@ -117,22 +152,24 @@ export async function max<T>(iter: AsyncIterable<T>, selector: (item: T) => numb
     return result
 }
 
-export async function every<T>(iter: AsyncIterable<T>, predicate: (item: T) => boolean,
+export async function every<T>(iter: AsyncIterable<T>,
+    predicate: (item: T) => boolean | Promise<boolean>, 
     thisArg: any = undefined): Promise<boolean> {
     if (thisArg)
         predicate = predicate.bind(thisArg)
     for await (let item of iter)
-        if (!predicate(item))
+        if (!await predicate(item))
             return false
     return true
 }
 
-export async function any<T>(iter: AsyncIterable<T>, predicate: (item: T) => boolean,
+export async function any<T>(iter: AsyncIterable<T>,
+    predicate: (item: T) => boolean | Promise<boolean>, 
     thisArg: any = undefined): Promise<boolean> {
     if (thisArg)
         predicate = predicate.bind(thisArg)
     for await (let item of iter)
-        if (predicate(item))
+        if (await predicate(item))
             return true
     return false
 }
@@ -147,4 +184,12 @@ export async function toArray<T>(iter: AsyncIterable<T>): Promise<T[]> {
     }
     res.length = i
     return res
+}
+
+export async function forEach<T>(iter: AsyncIterable<T>, 
+    action: (item: T) => any, thisArg: any = undefined): Promise<void> {
+        if (thisArg)
+        action = action.bind(thisArg)
+    for await (let item of iter)
+        action(item)
 }

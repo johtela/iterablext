@@ -1,48 +1,115 @@
+/**
+ * ---
+ * {
+ *   "visualizers": [
+ *     {
+ *       "path": "./src/visualizers/event-viewer.ts",
+ *       "includeStyles": false
+ *     }
+ *   ]
+ * }
+ * ---
+ * 
+ * # Transforming Events to AsyncIterable
+ * 
+ * The following code example shows how to use the EventIterator to implement
+ * dragging behavior by capturing the `mousemove`, `mousedown` and `mouseup`
+ * events. The output of the functions is shown in the grey `<pre>` box below
+ * the code. 
+ * ```ts
+ *  async function handleEvents(pre: HTMLElement, code: HTMLElement) {
+ *     let eventIter = new ie.EventIterator<MouseEvent>(pre, 'mousemove', 
+ *         'mousedown', 'mouseup')
+ *     code.innerText =
+ *         "Implementing dragging using EventIterator. Right-click to stop."
+ *     await ie.async.any(eventIter, async e => {
+ *         if (e.type == 'mousedown') {
+ *             if (e.button == 2)
+ *                 return true
+ *             code.innerText = `Start dragging at (${e.x}, ${e.y})\n`
+ *             await ie.async.every(eventIter, de => {
+ *                 code.innerText = `Dragged to (${de.x}, ${de.y})\n`
+ *                 return de.type == 'mousemove'
+ *             })
+ *         }
+ *         else
+ *            code.innerText = `Moved to (${e.x}, ${e.y})\n`
+ *         return false
+ *     })
+ *     code.innerText = "Done!"
+ *  }
+ * ```
+ * 
+ * <<v:event-viewer>>
+ * 
+ */
+const EVENT_LIMIT = 10
+const WAIT_LIMIT = 10
 
-export function elementEvents(target: HTMLElement,
-    ...kinds: (keyof HTMLElementEventMap)[]): AsyncIterable<Event> {
-    const eventBuffer: Event[] = []
-    const resolveBuffer: ((item: IteratorResult<Event>) => void)[] = []
-    let done = false
+export class EventIterator<T extends Event> implements AsyncIterable<T>,
+    AsyncIterator<T> {
+    private used = 0
+    private eventBuffer: T[] = []
+    private waitBuffer: ((item: IteratorResult<T>) => void)[] = []
+    private target: HTMLElement
+    private types: (keyof HTMLElementEventMap)[]
 
-    function handler(e: Event) {
-        if (done)
-            return
-        if (resolveBuffer.length > 0)
-            resolveBuffer.shift()({ done, value: e })
-        else
-            eventBuffer.push(e)
+    constructor(target: HTMLElement, ...types: (keyof HTMLElementEventMap)[]) {
+        this.target = target
+        this.types = types
     }
 
-    function next(): Promise<IteratorResult<Event>> {
+    private addListener() {
+        for (let i = 0; i < this.types.length; i++)
+            this.target.addEventListener(this.types[i], this.handler)
+    }
+
+    private removeListener() {
+        for (let i = 0; i < this.types.length; i++)
+            this.target.removeEventListener(this.types[i], this.handler)
+    }
+
+    private handler = (e: T) => {
+        if (!this.used)
+            return
+        if (this.waitBuffer.length > 0)
+            this.waitBuffer.shift()({ done: false, value: e })
+        else if (this.eventBuffer.length < EVENT_LIMIT)
+            this.eventBuffer.push(e)
+        else
+            throw Error("Event iterator buffer overflow")
+    }
+
+    [Symbol.asyncIterator]() {
+        if (this.used++ == 0)
+            this.addListener()
+        return this
+    }
+
+    next(): Promise<IteratorResult<T>> {
         return new Promise(resolve => {
-            if (done)
-                resolve({ done, value: undefined })
-            else if (eventBuffer.length > 0)
-                resolve({ done, value: eventBuffer.shift() })
+            if (!this.used)
+                resolve({ done: true, value: undefined })
+            else if (this.eventBuffer.length > 0)
+                resolve({ done: false, value: this.eventBuffer.shift() })
+            else if (this.waitBuffer.length < WAIT_LIMIT)
+                this.waitBuffer.push(resolve)
             else
-                resolveBuffer.push(resolve)
+                Promise.reject("Event iterator wait buffer overflow")
         })
     }
 
-    function ret(): Promise<IteratorResult<Event>> {
-        done = true
-        for (let i = 0; i < kinds.length; i++)
-            target.removeEventListener(kinds[i], handler)
-        return new Promise(resolve => resolve({ done, value: undefined }))
+    return(): Promise<IteratorResult<T>> {
+        if (--this.used == 0)
+            this.removeListener()
+        return new Promise(resolve => resolve({ done: true, value: undefined }))
     }
 
-    function err(e: any): Promise<IteratorResult<Event>> {
-        done = true
-        return Promise.reject(e)
-    }
-
-    for (let i = 0; i < kinds.length; i++)
-        target.addEventListener(kinds[i], handler)
-
-    return {
-        [Symbol.asyncIterator]() {
-            return { next, return: ret, throw: err }
+    throw(e: any): Promise<IteratorResult<T>> {
+        if (this.used) {
+            this.removeListener()
+            this.used = 0
         }
+        return Promise.reject(e)
     }
 }

@@ -1,0 +1,17 @@
+{
+    "exclude": [
+        "node_modules",
+        "lib"
+    ],
+    "excludeFromToc": [
+        "src/visualizers/*"
+    ],
+    "updateToc": true,
+    "frontMatter": {
+        "projectName": "iterablext",
+        "repository": "https://github.com/johtela/iterablext",
+        "download": "https://www.npmjs.com/package/iterablext",
+        "footer": "Copyright © 2020 Tommi Johtela",
+        "logo": "images/hurdy-gurdy.svg"
+    }
+}

@@ -1,6 +1,6 @@
 import * as async from './async'
-
 export { async }
+export { EventIterator } from './events'
 
 export function* concat<T>(...iters: Iterable<T>[]): Iterable<T> {
     for (let i = 0; i < iters.length; ++i)
@@ -35,8 +35,8 @@ export function reduce<T, U>(iter: Iterable<T>, reducer: (acc: U, curr: T) => U,
     return result
 }
 
-export function* flatMap<T, U>(iter: Iterable<T>, mapper: (item: T) => Iterable<U>,
-    thisArg: any = undefined): Iterable<U> {
+export function* flatMap<T, U>(iter: Iterable<T>,
+    mapper: (item: T) => Iterable<U>, thisArg: any = undefined): Iterable<U> {
     if (thisArg)
         mapper = mapper.bind(thisArg)
     for (let outer of iter)
@@ -59,7 +59,8 @@ export function* zipWith<T, U, V>(iter1: Iterable<T>, iter2: Iterable<U>,
     }
 }
 
-export function* zip<T, U>(iter1: Iterable<T>, iter2: Iterable<U>): Iterable<[T, U]> {
+export function* zip<T, U>(iter1: Iterable<T>, iter2: Iterable<U>):
+    Iterable<[T, U]> {
     return zipWith(iter1, iter2, (t, u) => [t, u])
 }
 
@@ -77,9 +78,31 @@ export function* skip<T>(iter: Iterable<T>, skipCount: number): Iterable<T> {
             yield item
 }
 
+export function* skipWhile<T>(iter: Iterable<T>,
+    predicate: (item: T) => boolean, thisArg: any = undefined): Iterable<T> {
+    if (thisArg)
+        predicate = predicate.bind(thisArg)
+    for (let item of iter)
+        if (!predicate(item)) {
+            yield item
+            break
+        }
+}
+
 export function* take<T>(iter: Iterable<T>, takeCount: number): Iterable<T> {
     for (let item of iter)
         if (takeCount-- > 0)
+            yield item
+        else
+            break
+}
+
+export function* takeWhile<T>(iter: Iterable<T>,
+    predicate: (item: T) => boolean, thisArg: any = undefined): Iterable<T> {
+    if (thisArg)
+        predicate = predicate.bind(thisArg)
+    for (let item of iter)
+        if (predicate(item))
             yield item
         else
             break
@@ -139,4 +162,12 @@ export function any<T>(iter: Iterable<T>, predicate: (item: T) => boolean,
         if (predicate(item))
             return true
     return false
+}
+
+export function forEach<T>(iter: Iterable<T>, action: (item: T) => any,
+    thisArg: any = undefined): void {
+    if (thisArg)
+        action = action.bind(thisArg)
+    for (let item of iter)
+        action(item)
 }

@@ -1,0 +1,27 @@
+{
+    "src/async": {
+        "url": "src/async.html",
+        "dependencies": []
+    },
+    "src/events": {
+        "url": "src/events.html",
+        "dependencies": []
+    },
+    "src/index": {
+        "url": "src/index.html",
+        "dependencies": [
+            "src/async",
+            "src/events"
+        ]
+    },
+    "src/visualizers/event-viewer": {
+        "url": "src/visualizers/event-viewer.html",
+        "dependencies": [
+            "src/visualizers/litscript/lib/visualizer",
+            "src/index"
+        ]
+    },
+    "src/visualizers/litscript/lib/visualizer": {
+        "dependencies": []
+    }
+}

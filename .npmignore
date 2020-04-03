@@ -1,4 +1,4 @@
 .vscode/
 src
-tsconfig.json
-lib/test
+*tsconfig.json
+lib/visualizers

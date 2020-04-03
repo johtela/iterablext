@@ -1,0 +1,22 @@
+[
+    {
+        "page": "README",
+        "file": "README.html",
+        "desc": ""
+    },
+    {
+        "page": "Iterable Combinators",
+        "file": "src/index.html",
+        "desc": ""
+    },
+    {
+        "page": "AsyncIterable Combinators",
+        "file": "src/async.html",
+        "desc": ""
+    },
+    {
+        "page": "Event Iterator",
+        "file": "src/events.html",
+        "desc": ""
+    }
+]
