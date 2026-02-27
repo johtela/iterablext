@@ -162,7 +162,7 @@ export async function every<T>(iter: AsyncIterable<T>,
     return true
 }
 
-export async function any<T>(iter: AsyncIterable<T>,
+export async function some<T>(iter: AsyncIterable<T>,
     predicate: (item: T) => boolean | Promise<boolean>, 
     thisArg: any = undefined): Promise<boolean> {
     if (thisArg)

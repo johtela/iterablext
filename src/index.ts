@@ -154,7 +154,7 @@ export function every<T>(iter: Iterable<T>, predicate: (item: T) => boolean,
     return true
 }
 
-export function any<T>(iter: Iterable<T>, predicate: (item: T) => boolean,
+export function some<T>(iter: Iterable<T>, predicate: (item: T) => boolean,
     thisArg: any = undefined): boolean {
     if (thisArg)
         predicate = predicate.bind(thisArg)

@@ -1,7 +1,4 @@
-import * as vis from "litscript/lib/visualizer"
 import * as ie from ".."
-
-vis.registerVisualizer("event-viewer", eventViewer)
 
 function eventViewer(params: string, parent: HTMLElement) {
     let pre = document.createElement("pre")
@@ -17,7 +14,7 @@ async function handleEvents(pre: HTMLElement, code: HTMLElement) {
         'mousedown', 'mouseup')
     code.innerText =
         "Implementing dragging using EventIterator. Right-click to stop."
-    await ie.async.any(eventIter, async e => {
+    await ie.async.some(eventIter, async e => {
         if (e.type == 'mousedown') {
             if (e.button == 2)
                 return true
