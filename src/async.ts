@@ -50,11 +50,10 @@ export async function* zipWith<T, U, V>(iter1: AsyncIterable<T>,
     thisArg: any = undefined): AsyncIterable<V> {
     if (thisArg)
         zipper = zipper.bind(thisArg)
-    let it1 = iter1[Symbol.iterator]()
-    let it2 = iter2[Symbol.iterator]()
+    let it1: AsyncIterator<T, T> = iter1[Symbol.iterator]()
+    let it2: AsyncIterator<U, U> = iter2[Symbol.iterator]()
     while (true) {
-        let res1 = it1.next()
-        let res2 = it2.next()
+        let [res1, res2] = await Promise.all([it1.next(), it2.next()])
         if (res1.done || res2.done)
             break
         yield await zipper(res1.value, res2.value)
